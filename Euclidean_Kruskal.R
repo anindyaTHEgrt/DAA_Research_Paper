@@ -5,7 +5,7 @@ if (!require("proxy")) install.packages("proxy")
 library(proxy)
 
 # Load the data file
-file_path <- "C:/Users/Admin/Documents/paper/dantzig42_d.txt"
+file_path <- "C:\\Users\\anind\\Downloads\\DAA PAPER\\RLab\\att48_xy.txt"
 distances <- as.matrix(read.table(file_path))
 
 # Define a function to calculate the Euclidean distance between two points
