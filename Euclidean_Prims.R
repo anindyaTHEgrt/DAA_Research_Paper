@@ -1,59 +1,83 @@
-# Install the proxy package if not already installed
-if (!require("proxy")) install.packages("proxy")
-
-# Load the proxy package
-library(proxy)
-
 # Load the data file
-file_path <- "C:/Users/Admin/Documents/paper/dantzig42_d.txt"
-distances <- as.matrix(read.table(file_path))
+file_path <- "C:\\Users\\anind\\Downloads\\DAA PAPER\\RLab\\att48_xy.txt"
+points <- as.matrix(read.table(file_path))
 
 # Define a function to calculate the Euclidean distance between two points
 euclidean_distance <- function(p1, p2) {
   sqrt(sum((p1 - p2)^2))
 }
 
+# Define a function to create an adjacency matrix using Euclidean distances
+create_adjacency_matrix <- function(points) {
+  n <- nrow(points)
+  adjacency_matrix <- matrix(0, nrow=n, ncol=n)
+  
+  # Time complexity: O(n^2)
+  for (i in 1:(n-1)) {
+    for (j in (i+1):n) {
+      # Euclidean distance calculation
+      adjacency_matrix[i, j] <- euclidean_distance(points[i,], points[j,])
+      adjacency_matrix[j, i] <- adjacency_matrix[i, j]
+    }
+  }
+  
+  return(adjacency_matrix)
+}
+
+# Create the adjacency matrix
+adjacency_matrix <- create_adjacency_matrix(points)
+
 # Define Prim's algorithm function
 prims_algorithm <- function(adjacency_matrix) {
   # Initialize variables
   n <- nrow(adjacency_matrix)
-  parent <- rep(0, n)
-  key <- rep(Inf, n)
-  mst_set <- rep(FALSE, n)
+  selected <- rep(FALSE, n)
+  selected[1] <- TRUE
+  result <- matrix(0, nrow=n, ncol=n)
+  num_selected <- 1
   
-  # Set the key for the first vertex to 0
-  key[1] <- 0
-  
-  # Main loop
-  for (i in 1:(n - 1)) {
-    # Find the vertex with the minimum key value
-    u <- which.min(key)
-    
-    # Add the vertex to the MST set
-    mst_set[u] <- TRUE
-    
-    # Update the key values for the adjacent vertices
-    for (v in 1:n) {
-      if (!mst_set[v] && adjacency_matrix[u, v] < key[v]) {
-        key[v] <- adjacency_matrix[u, v]
-        parent[v] <- u
+  # Time complexity: O(n^2)
+  while (num_selected < n) {
+    min_dist <- Inf
+    min_row <- NULL
+    min_col <- NULL
+    for (i in 1:n) {
+      if (selected[i]) {
+        for (j in 1:n) {
+          if (!selected[j] && adjacency_matrix[i, j] < min_dist) {
+            min_dist <- adjacency_matrix[i, j]
+            min_row <- i
+            min_col <- j
+          }
+        }
       }
     }
+    result[min_row, min_col] <- min_dist
+    result[min_col, min_row] <- min_dist
+    selected[min_col] <- TRUE
+    num_selected <- num_selected + 1
   }
   
-  # Return the parent array
-  return(parent)
+  return(result)
 }
 
-# Run Prim's algorithm and calculate the time complexity
+# Track time
 start_time <- Sys.time()
-mst <- prims_algorithm(distances)
+
+# Run Prim's algorithm
+min_spanning_tree <- prims_algorithm(adjacency_matrix)
+
+# Track elapsed time
 end_time <- Sys.time()
-time_complexity <- end_time - start_time
+elapsed_time <- end_time - start_time
 
-# Calculate the space complexity
-space_complexity <- object.size(distances) + object.size(mst)
+# Track memory usage
+memory_usage <- object.size(min_spanning_tree)
 
-# Print the results
-cat("Time complexity:", time_complexity, "\n")
-cat("Space complexity:", space_complexity, "\n")
+# Print the minimum spanning tree
+options(max.print = 1000000) # Set option to display all rows and columns
+print(min_spanning_tree)
+
+# Print the elapsed time and memory usage
+cat("Elapsed Time (ms):", elapsed_time * 1000, "\n")
+cat("Memory Usage (bytes):", memory_usage, "\n")
